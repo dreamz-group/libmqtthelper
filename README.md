@@ -20,6 +20,10 @@ int main(int argc, char* argv[])
     
     mqtt_helper_connection_monitor();
     
+    // Send a message.
+    const char* payload = "Let's make this greate";
+    mqtt_helper_publish("hello/strange", payload, strlen(payload));
+    
     while( true ) {
       // Do stuff.
     }
