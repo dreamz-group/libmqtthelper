@@ -316,7 +316,7 @@ static helper_device_t *mqtt_topic_check(helper_handle_t *handle, const char *qu
     return NULL;
 }
 
-static int _mqtt_helper_init(helper_handle_t* handle, const char* host, int port, const char* username, const char* password, const char* cert, const char* key, const char* capath, int keepalive, const char* clientId )
+static int _mqtt_helper_init(helper_handle_t* handle, const char* host, int port, const char* username, const char* password, const char* cert, const char* key, const char* capath, const char* cafile, int keepalive, const char* clientId )
 {
     int ret;
 
@@ -350,7 +350,7 @@ static int _mqtt_helper_init(helper_handle_t* handle, const char* host, int port
 
     if( capath != NULL ) // This forces TLS with or with out client certs.
     {    
-        ret = mosquitto_tls_set(handle->mosq, NULL, capath, cert, key, NULL);
+        ret = mosquitto_tls_set(handle->mosq, cafile, capath, cert, key, NULL);
         if( ret != MOSQ_ERR_SUCCESS )
         {
             dbgmsg(DBG_GRP_NETWORK, DBG_PRINT_ERROR, "Failed to setup mosquitto for secure connnection\n");
@@ -385,7 +385,7 @@ static int _mqtt_helper_init(helper_handle_t* handle, const char* host, int port
 
 int mqtt_helper_init()
 {
-    return _mqtt_helper_init(&mqtt_helper_handles[0], MQTT_HOSTNAME, MQTT_PORT, MQTT_USERNAME, MQTT_PASSWORD, NULL, NULL, NULL, 0, NULL);
+    return _mqtt_helper_init(&mqtt_helper_handles[0], MQTT_HOSTNAME, MQTT_PORT, MQTT_USERNAME, MQTT_PASSWORD, NULL, NULL, NULL, NULL, 0, NULL);
 }
 
 mqtt_helper_handle_t mqtt_helper_init_azure(const char* iot_hub_name, const char* deviceId, const char* SasToken, int keepalive )
@@ -403,7 +403,7 @@ mqtt_helper_handle_t mqtt_helper_init_azure(const char* iot_hub_name, const char
     {
         if ( mqtt_helper_handles[i].mosq == NULL )
         {
-            if( _mqtt_helper_init(&mqtt_helper_handles[i], host, 8883, username, SasToken, NULL, NULL, _capath, keepalive, deviceId) != 0 )
+            if( _mqtt_helper_init(&mqtt_helper_handles[i], host, 8883, username, SasToken, NULL, NULL, _capath, NULL, keepalive, deviceId) != 0 )
             {
                 break;
             }
@@ -420,7 +420,7 @@ mqtt_helper_handle_t mqtt_helper_init_ex(const char* host, int port, const char*
     {
         if ( mqtt_helper_handles[i].mosq == NULL )
         {
-            if( _mqtt_helper_init(&mqtt_helper_handles[i], host, port, username, password, NULL, NULL, NULL, keepalive, NULL) != 0 )
+            if( _mqtt_helper_init(&mqtt_helper_handles[i], host, port, username, password, NULL, NULL, NULL, NULL, keepalive, NULL) != 0 )
             {
                 break;
             }
@@ -430,7 +430,7 @@ mqtt_helper_handle_t mqtt_helper_init_ex(const char* host, int port, const char*
     return MQTT_HELPER_HANDLE_INVALID;
 }
 
-mqtt_helper_handle_t mqtts_helper_init_cert_ex(const char* host, int port, const char* cert, const char* key, const char* capath, int keepalive)
+mqtt_helper_handle_t mqtts_helper_init_cert_ex(const char* host, int port, const char* cert, const char* key, const char* capath, const char* cafile, int keepalive)
 {
     int i = MQTT_HELPER_HANDLE_INVALID;
     for(i=0; i < MQTT_HELPER_HANDLE_MAX; ++i )
@@ -464,7 +464,7 @@ mqtt_helper_handle_t mqtts_helper_init_cert_ex(const char* host, int port, const
     {
         capath = _capath;
     }           
-    return _mqtt_helper_init(&mqtt_helper_handles[i], host, port, NULL,     NULL,     cert, key,  capath, keepalive, NULL ) == 0 ? i : MQTT_HELPER_HANDLE_INVALID;
+    return _mqtt_helper_init(&mqtt_helper_handles[i], host, port, NULL,     NULL,     cert, key,  capath, cafile, keepalive, NULL ) == 0 ? i : MQTT_HELPER_HANDLE_INVALID;
 }
 
 // =========== MQTT callbacks ============
@@ -509,6 +509,7 @@ static int _mqtt_helper_reconnect_int(helper_handle_t *handle)
     int rtn = mosquitto_reconnect( handle->mosq );
     if( rtn != MOSQ_ERR_SUCCESS )
     {
+        dbgmsg(DBG_GRP_MQTT, DBG_PRINT_ERROR, "Reconnection failed with status: (%d)...\n", rtn);
         return rtn;
     }
 
