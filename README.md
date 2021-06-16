@@ -1,7 +1,7 @@
 # libmqtthelper
 This library is used to simplefy implementation of mqtt clients in C and C++ services.
 
-```c
+```
 #include "mqtthelper.h"
 
 int hello_cb(void *notused, const char *topic, void *msg, int msg_len, void *user_data)
@@ -31,3 +31,4 @@ int main(int argc, char* argv[])
     return 0;   
 }
 ```
+

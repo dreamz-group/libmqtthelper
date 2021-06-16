@@ -63,8 +63,9 @@ mqtt_helper_handle_t mqtt_helper_init_ex(const char* host, int port, const char*
 // @param cert - client cert to be used or null (default /usr/local/etc/client.pem)
 // @param key  - client cert key file of null (default /usr/local/etc/client.key)
 // @param capath - ca path to be used or null (default /etc/ssl/certs)
+// @param cafile - ca file to be used or null (default null)
 // @return handle on success, else MQTT_HELPER_HANDLE_INVALID.
-mqtt_helper_handle_t mqtts_helper_init_cert_ex(const char* host, int port, const char* cert, const char* key, const char* capath, int keepalive);
+mqtt_helper_handle_t mqtts_helper_init_cert_ex(const char* host, int port, const char* cert, const char* key, const char* capath, const char* cafile, int keepalive);
 
 // Init function
 // @param iot_hub_name - is the name of the iot_hub (with out the .azure-devices.net).
